@@ -12,9 +12,10 @@ Route::get('/user', function (Request $request) {
 
 
 Route::post('/auth/login', [AuthController::class, 'login']);
+
 Route::post('/auth/register', [AuthController::class, 'register']);
 
 Route::middleware([JwtMiddleware::class])->group(function () {
-
+    Route::get('/auth/logout', [AuthController::class, 'logout']);
     Route::resource('/citas', CitaController::class);
 });

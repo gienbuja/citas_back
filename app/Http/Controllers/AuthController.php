@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\JwtToken;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -12,7 +13,6 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         $credentials = $request->only('email', 'password');
-        // return env('JWT_SECRET');
         if (Auth::attempt($credentials)) {
             $user = Auth::user();
             $payload = [
@@ -24,22 +24,29 @@ class AuthController extends Controller
 
             $token = JWT::encode($payload, env('JWT_SECRET'), 'HS256');
 
+            // Guardar el token en la base de datos
+            JwtToken::create([
+                'user_id' => $user->id,
+                'token' => $token,
+            ]);
+
             return response()->json([
                 'token' => $token,
-                'user'=>$user
+                'user' => $user
             ]);
         } else {
-            return response()->json(['error' => 'Unauthorized'], 401);
+            return response()->json(['error' => 'No tiene permisos de ingreso'], 401);
         }
     }
 
-    public function me(Request $request)
+    public function logout()
     {
-        return response()->json(Auth::user());
-    }
+        $user = Auth::user();
+        $token = request()->bearerToken();
 
-    public function logout(Request $request)
-    {
+        // Revocar el token
+        JwtToken::where('user_id', $user->id)->where('token', $token)->delete();
+
         Auth::logout();
         return response()->json(['message' => 'Session cerrada']);
     }
