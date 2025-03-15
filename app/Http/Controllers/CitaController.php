@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Notifications\CitaCreada;
 use Gate;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -49,8 +50,11 @@ class CitaController extends Controller
         $cita->user_id = Auth::id();
         $cita->save();
 
+        // Enviar notificación al usuario
+        $user = Auth::user();
+        $user->notify(new CitaCreada($cita));
+
         return response()->json($cita->refresh(), 201);
-        //
     }
 
     /**

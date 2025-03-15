@@ -17,7 +17,7 @@ class JwtMiddleware
         $token = $request->bearerToken();
 
         if (!$token) {
-            return response()->json(['error' => 'Sin datos de sesion'], 401);
+            return response()->json(['message' => 'Sin datos de sesion'], 401);
         }
 
         try {
@@ -25,19 +25,19 @@ class JwtMiddleware
             $user = User::where('id', $credentials->sub)->first();
             
             if (!$user) {
-                return response()->json(['error' => 'Usuario no encontrado'], 401);
+                return response()->json(['message' => 'Usuario no encontrado'], 401);
             }
 
             // Verificar si el token está en la base de datos
             $tokenExists = JwtToken::where('token', $token)->exists();
 
             if (!$tokenExists) {
-                return response()->json(['error' => 'Sesion cerrada'], 401);
+                return response()->json(['message' => 'Sesion cerrada'], 401);
             }
 
             Auth::login($user);
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Sesion invalida', 'e' => $e->getMessage()], 401);
+            return response()->json(['message' => 'Sesion invalida', 'e' => $e->getMessage()], 401);
         }
 
         return $next($request);
