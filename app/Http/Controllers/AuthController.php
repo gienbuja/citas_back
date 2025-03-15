@@ -12,7 +12,7 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         $credentials = $request->only('email', 'password');
-
+        // return env('JWT_SECRET');
         if (Auth::attempt($credentials)) {
             $user = Auth::user();
             $payload = [
@@ -41,17 +41,23 @@ class AuthController extends Controller
     public function logout(Request $request)
     {
         Auth::logout();
-        return response()->json(['message' => 'Successfully logged out']);
+        return response()->json(['message' => 'Session cerrada']);
     }
 
     public function register(Request $request)
     {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users',
+            'password' => 'required|string|min:8',
+        ]);
+
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => bcrypt($request->password),
         ]);
 
-        return response()->json(['message' => 'User created successfully']);
+        return response()->json(['message' => 'Creado con exito', 'user' => $user->refresh()]);
     }
 }

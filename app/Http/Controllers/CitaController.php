@@ -15,9 +15,10 @@ class CitaController extends Controller
      */
     public function index()
     {
-        if (Auth::user()->role == 'admin'){
-            return Cita::get();
-        };
+        if (Auth::user()->role == 'admin') {
+            response()->json(Cita::get());
+        }
+        ;
         $citas = Cita::where('user_id', Auth::id())->get();
         return response()->json($citas);
     }
@@ -35,11 +36,10 @@ class CitaController extends Controller
      */
     public function store(Request $request)
     {
-        
         $request->validate([
             'descripcion' => 'required|string|max:255',
             'hora' => 'required|string',
-            'fecha' => 'required|date',
+            'fecha' => 'required|date|after_or_equal:today',
         ]);
 
         $cita = new Cita();
@@ -58,6 +58,7 @@ class CitaController extends Controller
      */
     public function show(Cita $cita)
     {
+        Gate::authorize('view', $cita);
         return response()->json($cita, 200);
         //
     }
@@ -75,6 +76,7 @@ class CitaController extends Controller
      */
     public function update(Request $request, Cita $cita)
     {
+        Gate::authorize('updateCita', $cita);
         $request->validate([
             'descripcion' => 'required|string|max:255',
             'hora' => 'required|string',

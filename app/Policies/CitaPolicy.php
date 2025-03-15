@@ -2,8 +2,9 @@
 
 namespace App\Policies;
 
+use App\Models\Cita;
 use App\Models\User;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Auth\Access\Response;
 
 class CitaPolicy
 {
@@ -15,13 +16,19 @@ class CitaPolicy
         //
 
     }
-
-    public function destroy()
+    public function view(User $user, Cita $cita)
     {
+        return $user->rol === 'admin' || $user->id === $cita->user_id;
+    }
 
-        if (auth()->user()->rol == 'Admin') {
-            return true;
-        }
-        return false;
+    public function updateCita(User $user, Cita $cita)
+    {
+        return $user->rol === 'admin' || $user->id === $cita->user_id;
+    }
+
+    public function destroy(User $user, Cita $cita)
+    {
+        return $user->rol === 'admin' ? Response::allow()
+            : Response::deny('No es usuario administrador');
     }
 }
