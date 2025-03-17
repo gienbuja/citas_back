@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
 use App\Notifications\CitaCreada;
 use Gate;
 use Illuminate\Http\Request;
@@ -16,10 +17,9 @@ class CitaController extends Controller
      */
     public function index()
     {
-        if (Auth::user()->role == 'admin') {
-            response()->json(Cita::get());
+        if (Auth::user()->rol == 'Admin') {
+            return response()->json(Cita::with('user')->get());
         }
-        ;
         $citas = Cita::where('user_id', Auth::id())->get();
         return response()->json($citas);
     }
@@ -53,8 +53,11 @@ class CitaController extends Controller
         // Enviar notificación al usuario
         $user = Auth::user();
         $user->notify(new CitaCreada($cita));
-
-        return response()->json($cita->refresh(), 201);
+        $cita->refresh();
+        if ($user->rol == 'Admin') {
+            $cita->user = $user;
+        }
+        return response()->json($cita, 201);
     }
 
     /**
@@ -83,7 +86,7 @@ class CitaController extends Controller
         Gate::authorize('updateCita', $cita);
         $request->validate([
             'descripcion' => 'required|string|max:255',
-            'hora' => 'required|string',
+            'hora' => 'required|date',
             'fecha' => 'required|date',
             'estado' => 'required|string|in:Pendiente,Confirmada,Cancelada'
         ]);
@@ -91,9 +94,15 @@ class CitaController extends Controller
         $cita->fecha = $request->input('fecha');
         $cita->hora = $request->input('hora');
         $cita->descripcion = $request->input('descripcion');
+        $cita->estado = $request->input('estado');
         $cita->save();
 
-        return response()->json($cita->refresh(), 200);
+        $cita->refresh();
+        if (Auth::user()->rol == 'Admin') {
+            $cita->user = $cita->user;
+        }
+
+        return response()->json($cita, 200);
         //
     }
 

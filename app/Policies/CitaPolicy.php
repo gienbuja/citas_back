@@ -18,17 +18,17 @@ class CitaPolicy
     }
     public function view(User $user, Cita $cita)
     {
-        return $user->rol === 'admin' || $user->id === $cita->user_id;
+        return $user->rol === 'Admin' || $user->id === $cita->user_id;
     }
 
     public function updateCita(User $user, Cita $cita)
     {
-        return $user->rol === 'admin' || $user->id === $cita->user_id;
+        return $user->rol === 'Admin' || $user->id === $cita->user_id;
     }
 
     public function destroy(User $user, Cita $cita)
     {
-        return $user->rol === 'admin' ? Response::allow()
+        return $user->rol === 'Admin' ? Response::allow()
             : Response::deny('No es usuario administrador');
     }
 }

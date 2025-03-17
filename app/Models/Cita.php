@@ -9,4 +9,8 @@ class Cita extends Model
     protected $casts = [
         'fecha' => 'date'
     ];
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 }
